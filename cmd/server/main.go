@@ -11,17 +11,27 @@ import (
 )
 
 func main() {
-	redisStore, err := datastore.NewRedisStore("localhost:6379", "", 0)
+	// Load the configuration
+	log.Println("Loading configuration...")
+	configs, err := LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Connecting to datastore...")
+	redisStore, err := datastore.NewRedisStore(configs.KVSURI, "", 0)
 	if err != nil {
 		// handle error
 		log.Println(err)
 	}
 
+	// Create the service
 	svc := service.NewService(redisStore)
 	endpoints := endpoint.MakeEndpoints(svc)
 
 	httpHandler := transport.NewHTTPHandler(endpoints)
 
 	// Start the HTTP server
+	log.Println("Starting HTTP server...")
 	transport.NewHTTPServer(":8080", httpHandler)
 }

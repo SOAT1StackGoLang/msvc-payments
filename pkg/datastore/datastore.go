@@ -1,9 +1,10 @@
 package datastore
 
 import (
+	"context"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type RedisStore struct {
@@ -17,7 +18,7 @@ func NewRedisStore(addr string, password string, db int) (*RedisStore, error) {
 		DB:       db,
 	})
 
-	_, err := client.Ping().Result()
+	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -26,8 +27,8 @@ func NewRedisStore(addr string, password string, db int) (*RedisStore, error) {
 }
 
 // Set adds a key-value pair to the store
-func (s *RedisStore) Set(key string, value interface{}, expiration time.Duration) error {
-	err := s.Client.Set(key, value, expiration).Err()
+func (s *RedisStore) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+	err := s.Client.Set(ctx, key, value, expiration).Err()
 	if err != nil {
 		return err
 	}
@@ -35,8 +36,8 @@ func (s *RedisStore) Set(key string, value interface{}, expiration time.Duration
 }
 
 // Get retrieves a value from the store by its key
-func (s *RedisStore) Get(key string) (string, error) {
-	value, err := s.Client.Get(key).Result()
+func (s *RedisStore) Get(ctx context.Context, key string) (string, error) {
+	value, err := s.Client.Get(ctx, key).Result()
 	if err == redis.Nil {
 		return "", nil
 	} else if err != nil {
@@ -47,8 +48,8 @@ func (s *RedisStore) Get(key string) (string, error) {
 
 // Implement your pub/sub methods here
 // Publish sends a message to a channel
-func (s *RedisStore) Publish(channel string, message interface{}) error {
-	err := s.Client.Publish(channel, message).Err()
+func (s *RedisStore) Publish(ctx context.Context, channel string, message interface{}) error {
+	err := s.Client.Publish(ctx, channel, message).Err()
 	if err != nil {
 		return err
 	}
@@ -56,9 +57,9 @@ func (s *RedisStore) Publish(channel string, message interface{}) error {
 }
 
 // Subscribe subscribes to a channel and returns a channel that receives messages
-func (s *RedisStore) Subscribe(channel string) (<-chan *redis.Message, error) {
-	pubsub := s.Client.Subscribe(channel)
-	_, err := pubsub.Receive()
+func (s *RedisStore) Subscribe(ctx context.Context, channel string) (<-chan *redis.Message, error) {
+	pubsub := s.Client.Subscribe(ctx, channel)
+	_, err := pubsub.Receive(ctx)
 	if err != nil {
 		return nil, err
 	}

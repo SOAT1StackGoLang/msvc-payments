@@ -8,11 +8,13 @@ import (
 
 // define the Request and Response types here
 type Request1 struct {
-	Message string
+	Id      string `json:"id"`
+	Message string `json:"message"`
 }
 
 type Response1 struct {
-	Message string
+	Id      string `json:"id"`
+	Message string `json:"message"`
 }
 
 type Request2 struct {
@@ -43,13 +45,20 @@ func NewService(redisStore *datastore.RedisStore) Service {
 
 // Implement the Service interface here
 func (s *service) Endpoint1(ctx context.Context, request Request1) (Response1, error) {
-	// lets mock something just to build
-	return Response1{}, nil
-	// ...
+	// store the message in the datastore
+	err := s.redisClient.Set(ctx, request.Id, request.Message, 0)
+	if err != nil {
+		return Response1{}, err
+	}
+	get, err := s.redisClient.Client.Get(ctx, request.Id).Result()
+	if err != nil {
+		return Response1{}, err
+	}
+	// parse get to response
+	return Response1{Id: request.Id, Message: get}, nil
 }
 
 func (s *service) Endpoint2(ctx context.Context, request Request2) (Response2, error) {
-
 	return Response2{}, nil
 	// ...
 }
