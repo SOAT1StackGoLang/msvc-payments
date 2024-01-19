@@ -18,9 +18,11 @@ type Response1 struct {
 }
 
 type Request2 struct {
+	Message string `json:"message"`
 }
 
 type Response2 struct {
+	Message string `json:"message"`
 }
 
 type Request3 struct {
@@ -59,8 +61,12 @@ func (s *service) Endpoint1(ctx context.Context, request Request1) (Response1, e
 }
 
 func (s *service) Endpoint2(ctx context.Context, request Request2) (Response2, error) {
+	// publish the message to the channel
+	err := s.redisClient.Publish(ctx, "log", request.Message)
+	if err != nil {
+		return Response2{}, err
+	}
 	return Response2{}, nil
-	// ...
 }
 
 func (s *service) Endpoint3(ctx context.Context, request Request3) (Response3, error) {

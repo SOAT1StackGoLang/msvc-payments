@@ -66,3 +66,14 @@ func (s *RedisStore) Subscribe(ctx context.Context, channel string) (<-chan *red
 
 	return pubsub.Channel(), nil
 }
+
+// Create a Subscribe method that log all messages received from the channel
+func (s *RedisStore) SubscribeLog(ctx context.Context) (<-chan *redis.Message, error) {
+	pubsub := s.Client.Subscribe(ctx, "log")
+	_, err := pubsub.Receive(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return pubsub.Channel(), nil
+}

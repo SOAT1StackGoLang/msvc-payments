@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/SOAT1StackGoLang/msvc-payments/pkg/datastore"
@@ -24,6 +25,18 @@ func main() {
 		// handle error
 		log.Println(err)
 	}
+
+	// Subscribe to the Redis channel
+	ch, err := redisStore.SubscribeLog(context.Background())
+	if err != nil {
+		log.Println(err)
+	}
+
+	go func() {
+		for msg := range ch {
+			log.Println("Received message:", msg.Payload)
+		}
+	}()
 
 	// Create the service
 	svc := service.NewService(redisStore)
