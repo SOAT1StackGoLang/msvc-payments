@@ -25,7 +25,7 @@ func MakeEndpoint1Handler(e endpoint.Endpoint) http.HandlerFunc {
 			return
 		}
 
-		response, err := e(context.Background(), request)
+		response, err := e(r.Context(), request)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -46,7 +46,7 @@ func MakeEndpoint2Handler(e endpoint.Endpoint) http.HandlerFunc {
 			return
 		}
 
-		response, err := e(context.Background(), request)
+		response, err := e(r.Context(), request)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -67,7 +67,7 @@ func MakeEndpoint3Handler(e endpoint.Endpoint) http.HandlerFunc {
 			return
 		}
 
-		response, err := e(context.Background(), request)
+		response, err := e(r.Context(), request)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
