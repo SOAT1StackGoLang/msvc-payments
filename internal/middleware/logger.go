@@ -3,6 +3,7 @@ package logger
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	kitlog "github.com/go-kit/log"
@@ -17,7 +18,13 @@ var (
 	ErrorLogger kitlog.Logger
 )
 
-// initializeLogger initializes the logger using go-kit.
+// InitializeLogger initializes the logger for the microservice.
+// It sets the logger level based on the environment variable "APP_LOG_LEVEL".
+// If the log level is set to "debug", it creates a logger that allows debug logs.
+// Otherwise, it creates a logger that allows error, warn and info level log events to pass.
+// The logger is configured with a custom timestamp format and caller information.
+// It also creates separate loggers for debug, info, and error logs.
+// Finally, it sets the logger as the output for the standard library log package.
 func InitializeLogger() {
 	// set logger level
 	var logger kitlog.Logger
@@ -47,7 +54,7 @@ func InitializeLogger() {
 		return kitlogterm.FgBgColor{}
 	}
 
-	if os.Getenv("APP_LOG_LEVEL") == "debug" {
+	if strings.ToLower(os.Getenv("APP_LOG_LEVEL")) == "debug" {
 		logger = kitlogterm.NewLogger(kitlog.NewSyncWriter(os.Stdout), kitlog.NewLogfmtLogger, colorFn)
 		logger = kitloglevel.NewFilter(logger, kitloglevel.AllowDebug())
 	} else {
@@ -70,7 +77,7 @@ func InitializeLogger() {
 
 	log.SetOutput(kitlog.NewStdlibAdapter(logger))
 
-	DebugLogger.Log("message", "debug logger initialized")
+	DebugLogger.Log("message", "DEBUG MODE ON: initialized")
 }
 
 // Helper functions

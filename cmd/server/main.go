@@ -3,10 +3,10 @@ package main
 import (
 	"os"
 
-	"github.com/SOAT1StackGoLang/msvc-payments/pkg/endpoint"
-	logger "github.com/SOAT1StackGoLang/msvc-payments/pkg/middleware"
-	"github.com/SOAT1StackGoLang/msvc-payments/pkg/service"
-	"github.com/SOAT1StackGoLang/msvc-payments/pkg/transport"
+	"github.com/SOAT1StackGoLang/msvc-payments/internal/endpoint"
+	logger "github.com/SOAT1StackGoLang/msvc-payments/internal/middleware"
+	"github.com/SOAT1StackGoLang/msvc-payments/internal/service"
+	"github.com/SOAT1StackGoLang/msvc-payments/internal/transport"
 )
 
 // main is the entry point of the program.

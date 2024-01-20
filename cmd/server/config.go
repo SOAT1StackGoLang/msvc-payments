@@ -14,6 +14,11 @@ type Config struct {
 	KVSURI string `envconfig:"KVSTORE_URI"`
 }
 
+// LoadConfig loads the configuration values for the server.
+// It retrieves the values from environment variables and sets default values if necessary.
+// The configuration includes the KVStore host, port, and URI.
+// If the environment variables are not set or invalid, default values are used.
+// The function returns the loaded configuration and an error if any.
 func LoadConfig() (Config, error) {
 	var cfg Config
 

@@ -4,13 +4,18 @@ import (
 	"context"
 	"time"
 
-	logger "github.com/SOAT1StackGoLang/msvc-payments/pkg/middleware"
+	logger "github.com/SOAT1StackGoLang/msvc-payments/internal/middleware"
 	"github.com/redis/go-redis/v9"
 )
 
 type RedisStore struct {
 	Client *redis.Client
 }
+
+// NewRedisStore creates a new RedisStore instance with the given address, password, and database number.
+// It establishes a connection to the Redis server and returns the RedisStore object.
+// If the connection is successful, it logs a message indicating the successful connection.
+// If an error occurs during the connection, it returns nil and the error.
 
 func NewRedisStore(addr string, password string, db int) (*RedisStore, error) {
 	client := redis.NewClient(&redis.Options{

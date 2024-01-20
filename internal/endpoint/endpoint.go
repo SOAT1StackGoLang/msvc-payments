@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/SOAT1StackGoLang/msvc-payments/pkg/service"
+	"github.com/SOAT1StackGoLang/msvc-payments/internal/service"
 	"github.com/go-kit/kit/endpoint"
 )
 

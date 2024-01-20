@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/SOAT1StackGoLang/msvc-payments/pkg/datastore"
+	"github.com/SOAT1StackGoLang/msvc-payments/internal/datastore"
 )
 
 // define the Request and Response types here
