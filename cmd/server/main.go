@@ -1,42 +1,22 @@
-// main.go
 package main
 
 import (
-	"context"
-	"log"
+	"os"
 
-	"github.com/SOAT1StackGoLang/msvc-payments/pkg/datastore"
 	"github.com/SOAT1StackGoLang/msvc-payments/pkg/endpoint"
+	logger "github.com/SOAT1StackGoLang/msvc-payments/pkg/middleware"
 	"github.com/SOAT1StackGoLang/msvc-payments/pkg/service"
 	"github.com/SOAT1StackGoLang/msvc-payments/pkg/transport"
 )
 
+// main is the entry point of the program.
+// It initializes the Redis store, creates the service, sets up the endpoints,
+// creates an HTTP handler, and starts the HTTP server.
 func main() {
-	// Load the configuration
-	log.Println("Loading configuration...")
-	configs, err := LoadConfig()
+	redisStore, err := initializeApp()
 	if err != nil {
-		log.Fatal(err)
+		os.Exit(1)
 	}
-
-	log.Println("Connecting to datastore...")
-	redisStore, err := datastore.NewRedisStore(configs.KVSURI, "", 0)
-	if err != nil {
-		// handle error
-		log.Println(err)
-	}
-
-	// Subscribe to the Redis channel
-	ch, err := redisStore.SubscribeLog(context.Background())
-	if err != nil {
-		log.Println(err)
-	}
-
-	go func() {
-		for msg := range ch {
-			log.Println("Received message:", msg.Payload)
-		}
-	}()
 
 	// Create the service
 	svc := service.NewService(redisStore)
@@ -45,6 +25,6 @@ func main() {
 	httpHandler := transport.NewHTTPHandler(endpoints)
 
 	// Start the HTTP server
-	log.Println("Starting HTTP server...")
+	logger.Info("Starting HTTP server...")
 	transport.NewHTTPServer(":8080", httpHandler)
 }

@@ -2,9 +2,9 @@ package datastore
 
 import (
 	"context"
-	"log"
 	"time"
 
+	logger "github.com/SOAT1StackGoLang/msvc-payments/pkg/middleware"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -24,7 +24,7 @@ func NewRedisStore(addr string, password string, db int) (*RedisStore, error) {
 		return nil, err
 	}
 	if ping == "PONG" {
-		log.Println("Connected to Redis: PONG!")
+		logger.Info("Connected to Redis: PONG!")
 	}
 
 	return &RedisStore{Client: client}, nil
