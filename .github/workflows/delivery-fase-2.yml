@@ -1,0 +1,25 @@
+name: delivery-fase-2
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  # Optional: allow read access to pull request. Use with `only-new-issues` option.
+  # pull-requests: read
+
+jobs:
+  delivery-fase-2:
+    name: Runbook fase 2
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and Start Containers
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/')
+        run: cd code && ./run.sh recreate-all
+      - name: Execute fase 2 tests
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/')
+        run: cd code/tests && source fase-2.sh && run_fase_2
+      - name: Skip if not trigged manually
+        if: github.event_name != 'workflow_dispatch' || github.event_name != 'pull_request'
+        run: echo "Skipping if not manually run or pull request"
