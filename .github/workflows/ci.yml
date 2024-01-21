@@ -40,7 +40,7 @@ jobs:
       run: echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" && echo "$IMAGE_NAME"
     - name: Run build
       run: earthly --push +all
-      working-directory: devsecops/cicd/build
+      working-directory: .
   trivy:
     uses: ./.github/workflows/trivy.yml
     needs: build-and-push
