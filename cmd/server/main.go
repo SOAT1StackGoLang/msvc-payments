@@ -4,9 +4,9 @@ import (
 	"os"
 
 	"github.com/SOAT1StackGoLang/msvc-payments/internal/endpoint"
-	logger "github.com/SOAT1StackGoLang/msvc-payments/internal/middleware"
 	"github.com/SOAT1StackGoLang/msvc-payments/internal/service"
 	"github.com/SOAT1StackGoLang/msvc-payments/internal/transport"
+	logger "github.com/SOAT1StackGoLang/msvc-payments/pkg/middleware"
 )
 
 // main is the entry point of the program.

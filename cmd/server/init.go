@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/SOAT1StackGoLang/msvc-payments/internal/datastore"
-	logger "github.com/SOAT1StackGoLang/msvc-payments/internal/middleware"
+	"github.com/SOAT1StackGoLang/msvc-payments/pkg/datastore"
+	logger "github.com/SOAT1StackGoLang/msvc-payments/pkg/middleware"
 )
 
 // initializeApp initializes the application by loading the configuration, connecting to the datastore,

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	logger "github.com/SOAT1StackGoLang/msvc-payments/internal/middleware"
+	logger "github.com/SOAT1StackGoLang/msvc-payments/pkg/middleware"
 	"github.com/redis/go-redis/v9"
 )
 

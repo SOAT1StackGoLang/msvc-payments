@@ -7,8 +7,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/SOAT1StackGoLang/msvc-payments/internal/datastore"
-	logger "github.com/SOAT1StackGoLang/msvc-payments/internal/middleware"
+	"github.com/SOAT1StackGoLang/msvc-payments/pkg/datastore"
+	logger "github.com/SOAT1StackGoLang/msvc-payments/pkg/middleware"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
