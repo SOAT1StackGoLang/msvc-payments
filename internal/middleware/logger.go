@@ -81,14 +81,19 @@ func InitializeLogger() {
 }
 
 // Helper functions
-func Debug(msg string) {
-	DebugLogger.Log("message", msg)
+func Debug(msg ...string) {
+	// convert ...string to string
+	fullMsg := strings.Join(msg, " ")
+	DebugLogger.Log("message", fullMsg)
 }
 
-func Info(msg string) {
-	InfoLogger.Log("message", msg)
+func Info(msg ...string) {
+	fullMsg := strings.Join(msg, " ")
+	InfoLogger.Log("message", fullMsg)
 }
 
-func Error(msg string) {
-	ErrorLogger.Log("message", msg)
+func Error(msg ...string) {
+	// convert ...string to string
+	fullMsg := strings.Join(msg, " ")
+	ErrorLogger.Log("message", fullMsg)
 }

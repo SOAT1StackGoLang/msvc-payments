@@ -20,6 +20,11 @@ func main() {
 
 	// Create the service
 	svc := service.NewService(redisStore)
+
+	// Start processing payments background service
+	go svc.StartProcessingPayments()
+
+	// Create the endpoints using MakeEndpoints and CreatePaymentEndpoint from the service package
 	endpoints := endpoint.MakeEndpoints(svc)
 
 	httpHandler := transport.NewHTTPHandler(endpoints)

@@ -55,6 +55,27 @@ func (s *RedisStore) Get(ctx context.Context, key string) (string, error) {
 	return value, nil
 }
 
+// Exists checks if a key exists in the store
+func (s *RedisStore) Exists(ctx context.Context, key string) (bool, error) {
+	value, err := s.Client.Exists(ctx, key).Result()
+	if err != nil {
+		return false, err
+	}
+	if value == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
+// Delete removes a key-value pair from the store
+func (s *RedisStore) Delete(ctx context.Context, key string) error {
+	err := s.Client.Del(ctx, key).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Implement your pub/sub methods here
 // Publish sends a message to a channel
 func (s *RedisStore) Publish(ctx context.Context, channel string, message interface{}) error {
@@ -85,4 +106,40 @@ func (s *RedisStore) SubscribeLog(ctx context.Context) (<-chan *redis.Message, e
 	}
 
 	return pubsub.Channel(), nil
+}
+
+// Create a LPUSH method that will add a message to a list
+func (s *RedisStore) LPush(ctx context.Context, key string, value interface{}) error {
+	err := s.Client.LPush(ctx, key, value).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Create a BRPOP/BLPOP method that will remove and return the first element of a list
+func (s *RedisStore) BRPop(ctx context.Context, key string) (string, error) {
+	value, err := s.Client.BRPop(ctx, 0, key).Result()
+	if err != nil {
+		return "", err
+	}
+	return value[1], nil
+}
+
+// Create a BLMOVE method that will move an element from a list to another list atomically
+func (s *RedisStore) BLMOVE(ctx context.Context, source string, destination string) (string, error) {
+	value, err := s.Client.BLMove(ctx, source, destination, "RIGHT", "LEFT", 1*time.Hour).Result()
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+}
+
+// Create a LREM method that will remove the first count occurrences of elements equal to value from the list stored at key
+func (s *RedisStore) LREM(ctx context.Context, key string, count int64, value interface{}) error {
+	err := s.Client.LRem(ctx, key, count, value).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 }

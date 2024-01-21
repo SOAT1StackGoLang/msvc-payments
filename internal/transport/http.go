@@ -14,10 +14,14 @@ import (
 // It returns an `http.Handler` that can be used to serve the HTTP requests.
 func NewHTTPHandler(endpoints endpoint.Endpoints) http.Handler {
 	r := mux.NewRouter()
-	r.Methods("POST").Path("/endpoint1").Handler(endpoint.MakeEndpoint1Handler(endpoints.Endpoint1))
-	r.Methods("POST").Path("/endpoint2").Handler(endpoint.MakeEndpoint2Handler(endpoints.Endpoint2))
-	r.Methods("GET").Path("/endpoint3").Handler(endpoint.MakeEndpoint3Handler(endpoints.Endpoint3))
 	// Add other endpoints here
+
+	// Create Payment endpoint
+	r.Methods("POST").Path("/payments").Handler(endpoint.MakeCreatePaymentHandler(endpoints.CreatePayment))
+	// Get Payment endpoint
+	r.Methods("GET").Path("/payments").Handler(endpoint.MakeGetPaymentHandler(endpoints.GetPayment))
+	// Update Payment endpoint
+	r.Methods("PUT").Path("/payments").Handler(endpoint.MakeUpdatePaymentHandler(endpoints.UpdatePayment))
 	return r
 }
 

@@ -4,23 +4,33 @@ package endpoint
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/SOAT1StackGoLang/msvc-payments/internal/service"
 	"github.com/go-kit/kit/endpoint"
+	"github.com/google/uuid"
 )
 
 type Endpoints struct {
-	Endpoint1 endpoint.Endpoint
-	Endpoint2 endpoint.Endpoint
-	Endpoint3 endpoint.Endpoint
+	CreatePayment endpoint.Endpoint
+	GetPayment    endpoint.Endpoint
+	UpdatePayment endpoint.Endpoint
 	// Add other endpoints here
 }
 
-func MakeEndpoint1Handler(e endpoint.Endpoint) http.HandlerFunc {
+// Implement MakeCreatePaymentHandler
+func MakeCreatePaymentHandler(e endpoint.Endpoint) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		request := service.Request1{} // Use the Request1 type from the service package
-		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+
+		request := service.CreatePaymentRequest{} // Use the CreatePaymentRequest type from the service package
+		err := json.NewDecoder(r.Body).Decode(&request)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if request.Payment.ID == uuid.Nil {
+			err = errors.New("error on decoding request body")
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -31,17 +41,28 @@ func MakeEndpoint1Handler(e endpoint.Endpoint) http.HandlerFunc {
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(response); err != nil {
+		// Cast the response to the CreatePaymentResponse type from the service package
+		createPaymentResponse := response.(service.CreatePaymentResponse)
+
+		// Encode the response
+		if err := json.NewEncoder(w).Encode(createPaymentResponse); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-func MakeEndpoint2Handler(e endpoint.Endpoint) http.HandlerFunc {
+// Implement MakeGetPaymentHandler
+func MakeGetPaymentHandler(e endpoint.Endpoint) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		request := service.Request2{} // Use the Request2 type from the service package
+		request := service.GetPaymentRequest{} // Use the GetPaymentRequest type from the service package
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if request.PaymentID == uuid.Nil {
+			err := errors.New("error on decoding request body")
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -52,16 +73,21 @@ func MakeEndpoint2Handler(e endpoint.Endpoint) http.HandlerFunc {
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(response); err != nil {
+		// Cast the response to the GetPaymentResponse type from the service package
+		getPaymentResponse := response.(service.GetPaymentResponse)
+
+		// Encode the response
+		if err := json.NewEncoder(w).Encode(getPaymentResponse); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-func MakeEndpoint3Handler(e endpoint.Endpoint) http.HandlerFunc {
+// Implement MakeUpdatePaymentHandler
+func MakeUpdatePaymentHandler(e endpoint.Endpoint) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		request := service.Request3{} // Use the Request3 type from the service package
+		request := service.UpdatePaymentRequest{} // Use the UpdatePaymentRequest type from the service package
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -73,7 +99,11 @@ func MakeEndpoint3Handler(e endpoint.Endpoint) http.HandlerFunc {
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(response); err != nil {
+		// Cast the response to the UpdatePaymentResponse type from the service package
+		updatePaymentResponse := response.(service.UpdatePaymentResponse)
+
+		// Encode the response
+		if err := json.NewEncoder(w).Encode(updatePaymentResponse); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -82,35 +112,36 @@ func MakeEndpoint3Handler(e endpoint.Endpoint) http.HandlerFunc {
 
 func MakeEndpoints(s service.Service) Endpoints {
 	return Endpoints{
-		Endpoint1: makeEndpoint1(s),
-		Endpoint2: makeEndpoint2(s),
-		Endpoint3: makeEndpoint3(s),
+		CreatePayment: makeCreatePaymentEndpoint(s),
+		GetPayment:    makeGetPaymentEndpoint(s),
+		UpdatePayment: makeUpdatePaymentEndpoint(s),
 		// Initialize other endpoints here
 	}
 }
 
-func makeEndpoint1(s service.Service) endpoint.Endpoint {
+// Implement makeCreatePaymentEndpoint
+func makeCreatePaymentEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(service.Request1)
-		resp, err := s.Endpoint1(ctx, req)
+		req := request.(service.CreatePaymentRequest)
+		resp, err := s.CreatePayment(ctx, req)
 		return resp, err
 	}
 }
 
-func makeEndpoint2(s service.Service) endpoint.Endpoint {
+// Implement makeGetPaymentEndpoint
+func makeGetPaymentEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(service.Request2)
-		resp, err := s.Endpoint2(ctx, req)
+		req := request.(service.GetPaymentRequest)
+		resp, err := s.GetPayment(ctx, req)
 		return resp, err
 	}
 }
 
-func makeEndpoint3(s service.Service) endpoint.Endpoint {
+// Implement makeUpdatePaymentEndpoint
+func makeUpdatePaymentEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(service.Request3)
-		resp, err := s.Endpoint3(ctx, req)
+		req := request.(service.UpdatePaymentRequest)
+		resp, err := s.UpdatePayment(ctx, req)
 		return resp, err
 	}
 }
-
-// Implement other makeEndpoint functions similarly
