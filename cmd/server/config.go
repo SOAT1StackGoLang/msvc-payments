@@ -12,6 +12,7 @@ type Config struct {
 	KVSPort int    `envconfig:"KVSTORE_PORT"`
 	// optional configs
 	KVSURI string `envconfig:"KVSTORE_URI"`
+	KVSDB  int    `envconfig:"KVSTORE_DB"`
 }
 
 // LoadConfig loads the configuration values for the server.
@@ -44,6 +45,15 @@ func LoadConfig() (Config, error) {
 	if cfg.KVSURI == "" {
 		cfg.KVSURI = cfg.KVSHost + ":" + strconv.Itoa(cfg.KVSPort)
 	}
+
+	// KVSDB is not used in this example, but it can be added as an optional config
+	kvsStr := os.Getenv("KVSTORE_DB")
+	kvsDB, err := strconv.Atoi(kvsStr)
+	if err != nil {
+		// Set default value if KVSTORE_DB is not set or invalid
+		kvsDB = 0
+	}
+	cfg.KVSDB = kvsDB
 
 	return cfg, nil
 }

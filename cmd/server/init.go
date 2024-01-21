@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/SOAT1StackGoLang/msvc-payments/internal/datastore"
-	logger "github.com/SOAT1StackGoLang/msvc-payments/internal/middleware"
+	"github.com/SOAT1StackGoLang/msvc-payments/pkg/datastore"
+	logger "github.com/SOAT1StackGoLang/msvc-payments/pkg/middleware"
 )
 
 // initializeApp initializes the application by loading the configuration, connecting to the datastore,
@@ -25,7 +25,8 @@ func initializeApp() (*datastore.RedisStore, error) {
 	}
 
 	logger.Info("Connecting to datastore...")
-	redisStore, err := datastore.NewRedisStore(configs.KVSURI, "", 0)
+
+	redisStore, err := datastore.NewRedisStore(configs.KVSURI, "", configs.KVSDB)
 	if err != nil {
 		// handle error
 		logger.Error(err.Error())
