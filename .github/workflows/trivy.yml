@@ -1,0 +1,91 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Trivy
+
+on:
+  workflow_call:    
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trivy:
+    permissions:
+      contents: read
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+      packages: write # for aquasecurity/trivy-action to pull the image from the GitHub Container Registry
+    name: Pull and Scan
+    runs-on: "ubuntu-latest"
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: "${{ github.repository }}"
+      FORCE_COLOR: 1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: benjlevesque/short-sha@v2.2
+        id: short-sha
+        with:
+          length: 8
+          variable_name: SHORT_SHA
+
+      - name: Log in to the Container registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+          docker pull ghcr.io/soat1stackgolang/msvc-payments:msvc-${{ env.SHORT_SHA }}
+
+      - name: Run Trivy vulnerability scanner Main App
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/soat1stackgolang/msvc-payments:msvc-${{ env.SHORT_SHA }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          scanners: 'vuln,secret,config'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Run Trivy vulnerability scanner Main App in sarif mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/soat1stackgolang/msvc-payments:msvc-${{ env.SHORT_SHA }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security Main App tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: 'Main App Trivy Scan'
+
+  trivy-repo-scan:
+    name: Scan repository
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+      packages: write # for aquasecurity/trivy-action to pull the image from the GitHub Container Registry
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
