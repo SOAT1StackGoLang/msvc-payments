@@ -6,17 +6,17 @@
 version: 2
 updates:
   - package-ecosystem: "gomod" # See documentation for possible values
-    directory: "/code" # Location of package manifests
+    directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
     target-branch: "develop"
   - package-ecosystem: "docker" # See documentation for possible values
-    directory: "/devsecops" # Location of package manifests
+    directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
     target-branch: "develop"
   - package-ecosystem: "terraform" # See documentation for possible values
-    directory: "/devsecops" # Location of package manifests
+    directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
     target-branch: "develop"
