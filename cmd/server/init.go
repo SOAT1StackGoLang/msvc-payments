@@ -25,7 +25,8 @@ func initializeApp() (*datastore.RedisStore, error) {
 	}
 
 	logger.Info("Connecting to datastore...")
-	redisStore, err := datastore.NewRedisStore(configs.KVSURI, "", 0)
+
+	redisStore, err := datastore.NewRedisStore(configs.KVSURI, "", configs.KVSDB)
 	if err != nil {
 		// handle error
 		logger.Error(err.Error())
