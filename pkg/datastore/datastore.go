@@ -23,7 +23,7 @@ type RedisStore interface {
 	SubscribeLog(ctx context.Context) (<-chan *redis.Message, error)
 	LPush(ctx context.Context, key string, value interface{}) error
 	RPush(ctx context.Context, key string, value any) error
-	RetrieveAllFromList(ctx context.Context, key string) ([]string, error)
+	LRange(ctx context.Context, key string, start int64, stop int64) ([]string, error)
 	BRPop(ctx context.Context, key string) (string, error)
 	BLMOVE(ctx context.Context, source string, destination string) (string, error)
 	LREM(ctx context.Context, key string, count int64, value interface{}) error
@@ -141,8 +141,8 @@ func (s *redisStore) RPush(ctx context.Context, key string, value any) error {
 }
 
 // RetrieveAllFromList uses LRange to retrieve every value stored in a list defined by its key
-func (s *redisStore) RetrieveAllFromList(ctx context.Context, key string) ([]string, error) {
-	return s.Client.LRange(ctx, key, 0, -1).Result()
+func (s *redisStore) LRange(ctx context.Context, key string, start int64, stop int64) ([]string, error) {
+	return s.Client.LRange(ctx, key, start, stop).Result()
 }
 
 // Create a BRPOP/BLPOP method that will remove and return the first element of a list

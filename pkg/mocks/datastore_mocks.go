@@ -143,6 +143,21 @@ func (mr *MockRedisStoreMockRecorder) LREM(arg0, arg1, arg2, arg3 any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LREM", reflect.TypeOf((*MockRedisStore)(nil).LREM), arg0, arg1, arg2, arg3)
 }
 
+// LRange mocks base method.
+func (m *MockRedisStore) LRange(arg0 context.Context, arg1 string, arg2, arg3 int64) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LRange", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LRange indicates an expected call of LRange.
+func (mr *MockRedisStoreMockRecorder) LRange(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LRange", reflect.TypeOf((*MockRedisStore)(nil).LRange), arg0, arg1, arg2, arg3)
+}
+
 // Publish mocks base method.
 func (m *MockRedisStore) Publish(arg0 context.Context, arg1 string, arg2 any) error {
 	m.ctrl.T.Helper()
@@ -169,21 +184,6 @@ func (m *MockRedisStore) RPush(arg0 context.Context, arg1 string, arg2 any) erro
 func (mr *MockRedisStoreMockRecorder) RPush(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RPush", reflect.TypeOf((*MockRedisStore)(nil).RPush), arg0, arg1, arg2)
-}
-
-// RetrieveAllFromList mocks base method.
-func (m *MockRedisStore) RetrieveAllFromList(arg0 context.Context, arg1 string) ([]string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RetrieveAllFromList", arg0, arg1)
-	ret0, _ := ret[0].([]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RetrieveAllFromList indicates an expected call of RetrieveAllFromList.
-func (mr *MockRedisStoreMockRecorder) RetrieveAllFromList(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RetrieveAllFromList", reflect.TypeOf((*MockRedisStore)(nil).RetrieveAllFromList), arg0, arg1)
 }
 
 // Set mocks base method.
