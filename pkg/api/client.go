@@ -15,6 +15,12 @@ type Client struct {
 	logger     kitlog.Logger
 }
 
+//go:generate mockgen -destination=../mocks/api_mocks.go -package=mocks github.com/SOAT1StackGoLang/msvc-payments/pkg/api PaymentAPI
+type PaymentAPI interface {
+	CreatePayment(request CreatePaymentRequest) (CreatePaymentResponse, error)
+	GetPayment(request GetPaymentRequest) (GetPaymentResponse, error)
+}
+
 func NewClient(baseURL string, httpClient *http.Client, logger kitlog.Logger) *Client {
 	return &Client{
 		baseURL:    baseURL,
