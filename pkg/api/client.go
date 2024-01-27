@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-type Client struct {
+type client struct {
 	baseURL    string
 	httpClient *http.Client
 	logger     kitlog.Logger
@@ -21,15 +21,15 @@ type PaymentAPI interface {
 	GetPayment(request GetPaymentRequest) (GetPaymentResponse, error)
 }
 
-func NewClient(baseURL string, httpClient *http.Client, logger kitlog.Logger) *Client {
-	return &Client{
+func NewClient(baseURL string, httpClient *http.Client, logger kitlog.Logger) PaymentAPI {
+	return &client{
 		baseURL:    baseURL,
 		httpClient: httpClient,
 		logger:     logger,
 	}
 }
 
-func (c *Client) CreatePayment(request CreatePaymentRequest) (CreatePaymentResponse, error) {
+func (c *client) CreatePayment(request CreatePaymentRequest) (CreatePaymentResponse, error) {
 	url := fmt.Sprintf("%s/payments", c.baseURL)
 
 	payload, err := json.Marshal(request)
@@ -63,7 +63,7 @@ func (c *Client) CreatePayment(request CreatePaymentRequest) (CreatePaymentRespo
 	return responseBody, nil
 }
 
-func (c *Client) GetPayment(request GetPaymentRequest) (GetPaymentResponse, error) {
+func (c *client) GetPayment(request GetPaymentRequest) (GetPaymentResponse, error) {
 	url := fmt.Sprintf("%s/payments", c.baseURL)
 
 	payload, err := json.Marshal(request)
