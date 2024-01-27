@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"time"
 )
