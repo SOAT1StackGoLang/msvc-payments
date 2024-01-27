@@ -117,6 +117,17 @@ func (s *RedisStore) LPush(ctx context.Context, key string, value interface{}) e
 	return nil
 }
 
+// RPush appends items into the end of a list defined by its key
+func (s *RedisStore) RPush(ctx context.Context, key string, value any) error {
+	_, err := s.Client.RPush(ctx, key, value).Result()
+	return err
+}
+
+// RetrieveAllFromList uses LRange to retrieve every value stored in a list defined by its key
+func (s *RedisStore) RetrieveAllFromList(ctx context.Context, key string) ([]string, error) {
+	return s.Client.LRange(ctx, key, 0, -1).Result()
+}
+
 // Create a BRPOP/BLPOP method that will remove and return the first element of a list
 func (s *RedisStore) BRPop(ctx context.Context, key string) (string, error) {
 	value, err := s.Client.BRPop(ctx, 0, key).Result()
