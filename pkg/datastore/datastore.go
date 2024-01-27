@@ -27,6 +27,7 @@ type RedisStore interface {
 	BRPop(ctx context.Context, key string) (string, error)
 	BLMOVE(ctx context.Context, source string, destination string) (string, error)
 	LREM(ctx context.Context, key string, count int64, value interface{}) error
+	LIndex(ctx context.Context, key string, index int64) error
 }
 
 // NewRedisStore creates a new RedisStore instance with the given address, password, and database number.
@@ -140,7 +141,7 @@ func (s *redisStore) RPush(ctx context.Context, key string, value any) error {
 	return err
 }
 
-// RetrieveAllFromList uses LRange to retrieve every value stored in a list defined by its key
+// LRange to retrieve every value stored in a list defined by its key
 func (s *redisStore) LRange(ctx context.Context, key string, start int64, stop int64) ([]string, error) {
 	return s.Client.LRange(ctx, key, start, stop).Result()
 }
@@ -170,4 +171,10 @@ func (s *redisStore) LREM(ctx context.Context, key string, count int64, value in
 		return err
 	}
 	return nil
+}
+
+
+func (s *redisStore) LIndex(ctx context.Context, key string, index int64) error {
+	_, err := s.Client.LIndex(ctx, key, index).Result()
+	return err
 }

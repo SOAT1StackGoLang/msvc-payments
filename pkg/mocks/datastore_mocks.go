@@ -115,6 +115,20 @@ func (mr *MockRedisStoreMockRecorder) Get(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRedisStore)(nil).Get), arg0, arg1)
 }
 
+// LIndex mocks base method.
+func (m *MockRedisStore) LIndex(arg0 context.Context, arg1 string, arg2 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LIndex", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LIndex indicates an expected call of LIndex.
+func (mr *MockRedisStoreMockRecorder) LIndex(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LIndex", reflect.TypeOf((*MockRedisStore)(nil).LIndex), arg0, arg1, arg2)
+}
+
 // LPush mocks base method.
 func (m *MockRedisStore) LPush(arg0 context.Context, arg1 string, arg2 any) error {
 	m.ctrl.T.Helper()
