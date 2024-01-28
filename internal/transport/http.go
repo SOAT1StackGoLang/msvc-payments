@@ -2,10 +2,9 @@
 package transport
 
 import (
-	"net/http"
-
 	"github.com/SOAT1StackGoLang/msvc-payments/internal/endpoint"
 	"github.com/gorilla/mux"
+	"net/http"
 )
 
 // NewHTTPHandler returns a new HTTP handler that routes incoming requests to the appropriate endpoints.

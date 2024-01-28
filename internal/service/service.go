@@ -46,10 +46,10 @@ type Service interface {
 }
 
 type service struct {
-	redisClient *datastore.RedisStore
+	redisClient datastore.RedisStore
 }
 
-func NewService(redisStore *datastore.RedisStore) Service {
+func NewService(redisStore datastore.RedisStore) Service {
 	return &service{redisClient: redisStore}
 }
 
