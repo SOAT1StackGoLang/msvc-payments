@@ -13,7 +13,7 @@ import (
 // and subscribing to the Redis channel for receiving messages.
 // It returns a pointer to the RedisStore and an error if any.
 
-func initializeApp() (*datastore.RedisStore, error) {
+func initializeApp() (datastore.RedisStore, error) {
 	logger.InitializeLogger()
 
 	// Load the configuration
@@ -45,7 +45,7 @@ func initializeApp() (*datastore.RedisStore, error) {
 	return redisStore, nil
 }
 
-func debugChannelSubscriber(redisStore *datastore.RedisStore) error {
+func debugChannelSubscriber(redisStore datastore.RedisStore) error {
 	// Subscribe to the Redis channel if APP_LOG_LEVEL is set to debug
 	logger.Info("DEBUG MODE ON: Subscribing to Redis channel...")
 	ch, err := redisStore.SubscribeLog(context.Background())
