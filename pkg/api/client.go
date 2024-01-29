@@ -10,9 +10,8 @@ import (
 )
 
 type client struct {
-	baseURL    string
-	httpClient *http.Client
-	logger     kitlog.Logger
+	baseURL string
+	logger  kitlog.Logger
 }
 
 //go:generate mockgen -destination=../mocks/api_mocks.go -package=mocks github.com/SOAT1StackGoLang/msvc-payments/pkg/api PaymentAPI
@@ -21,11 +20,10 @@ type PaymentAPI interface {
 	GetPayment(request GetPaymentRequest) (GetPaymentResponse, error)
 }
 
-func NewClient(baseURL string, httpClient *http.Client, logger kitlog.Logger) PaymentAPI {
+func NewClient(baseURL string, logger kitlog.Logger) PaymentAPI {
 	return &client{
-		baseURL:    baseURL,
-		httpClient: httpClient,
-		logger:     logger,
+		baseURL: baseURL,
+		logger:  logger,
 	}
 }
 
@@ -44,7 +42,8 @@ func (c *client) CreatePayment(request CreatePaymentRequest) (CreatePaymentRespo
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := c.httpClient.Do(req)
+	httpClient := &http.Client{}
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return CreatePaymentResponse{}, err
 	}
@@ -78,7 +77,8 @@ func (c *client) GetPayment(request GetPaymentRequest) (GetPaymentResponse, erro
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := c.httpClient.Do(req)
+	httpClient := &http.Client{}
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return GetPaymentResponse{}, err
 	}
