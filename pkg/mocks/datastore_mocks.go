@@ -71,6 +71,20 @@ func (mr *MockRedisStoreMockRecorder) BRPop(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BRPop", reflect.TypeOf((*MockRedisStore)(nil).BRPop), arg0, arg1)
 }
 
+// CloseClient mocks base method.
+func (m *MockRedisStore) CloseClient() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CloseClient")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CloseClient indicates an expected call of CloseClient.
+func (mr *MockRedisStoreMockRecorder) CloseClient() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseClient", reflect.TypeOf((*MockRedisStore)(nil).CloseClient))
+}
+
 // Delete mocks base method.
 func (m *MockRedisStore) Delete(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
