@@ -14,6 +14,7 @@ type redisStore struct {
 
 //go:generate mockgen -destination=../mocks/datastore_mocks.go -package=mocks github.com/SOAT1StackGoLang/msvc-payments/pkg/datastore RedisStore
 type RedisStore interface {
+	CloseClient() error
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
 	Get(ctx context.Context, key string) (string, error)
 	Exists(ctx context.Context, key string) (bool, error)
@@ -51,6 +52,10 @@ func NewRedisStore(addr string, password string, db int) (RedisStore, error) {
 	}
 
 	return &redisStore{Client: client}, nil
+}
+
+func (s *redisStore) CloseClient() error {
+	return s.Client.Close()
 }
 
 // Set adds a key-value pair to the store
