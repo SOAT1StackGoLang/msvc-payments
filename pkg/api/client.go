@@ -7,6 +7,7 @@ import (
 	"fmt"
 	kitlog "github.com/go-kit/log"
 	"net/http"
+	"strings"
 )
 
 type client struct {
@@ -21,6 +22,9 @@ type PaymentAPI interface {
 }
 
 func NewClient(baseURL string, logger kitlog.Logger) PaymentAPI {
+	if !strings.HasPrefix(baseURL, "http://") && !strings.HasPrefix(baseURL, "https://") {
+		baseURL = "http://" + baseURL
+	}
 	return &client{
 		baseURL: baseURL,
 		logger:  logger,
@@ -28,6 +32,7 @@ func NewClient(baseURL string, logger kitlog.Logger) PaymentAPI {
 }
 
 func (c *client) CreatePayment(request CreatePaymentRequest) (CreatePaymentResponse, error) {
+
 	url := fmt.Sprintf("%s/payments", c.baseURL)
 
 	payload, err := json.Marshal(request)
