@@ -22,3 +22,4 @@ go.work
 .vscode/launch.json
 
 .idea
+.env
