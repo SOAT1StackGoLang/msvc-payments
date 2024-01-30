@@ -31,5 +31,5 @@ func main() {
 
 	// Start the HTTP server
 	logger.Info("Starting HTTP server...")
-	transport.NewHTTPServer(":8081", httpHandler)
+	transport.NewHTTPServer(":8080", httpHandler)
 }
