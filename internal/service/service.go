@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/SOAT1StackGoLang/msvc-payments/pkg/messages"
 	"math/rand"
 	"time"
 
@@ -43,14 +44,15 @@ type Service interface {
 	UpdatePayment(ctx context.Context, request UpdatePaymentRequest) (UpdatePaymentResponse, error)
 	GetPayment(ctx context.Context, request GetPaymentRequest) (GetPaymentResponse, error)
 	StartProcessingPayments()
+	StartConsumingPayments()
 }
 
-type service struct {
+type serviceImpl struct {
 	redisClient datastore.RedisStore
 }
 
 func NewService(redisStore datastore.RedisStore) Service {
-	return &service{redisClient: redisStore}
+	return &serviceImpl{redisClient: redisStore}
 }
 
 type Payment struct {
@@ -62,13 +64,54 @@ type Payment struct {
 	Status    PaymentStatus
 }
 
+func PaymentFromPaymentCreationRequestMessage(p messages.PaymentCreationRequestMessage) (*Payment, error) {
+	id, err := uuid.Parse(p.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	orderID, err := uuid.Parse(p.OrderID)
+	if err != nil {
+		return nil, err
+	}
+
+	createdAt, err := time.Parse(time.RFC3339, p.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	status := paymentStatusFromOrderStatus(p.Status)
+
+	return &Payment{
+		ID:        id,
+		CreatedAt: createdAt,
+		UpdatedAt: time.Now(),
+		Price:     decimal.NewFromFloat(p.Price),
+		OrderID:   orderID,
+		Status:    status,
+	}, nil
+}
+
+func paymentStatusFromOrderStatus(status string) PaymentStatus {
+	switch status {
+	case "Aberto":
+		return PaymentStatusPending
+	case "Aguardando Pagamento":
+		return PaymentStatusPending
+	case "Recebido":
+		return PaymentStatusPaid
+	default:
+		return PaymentStatusClosed
+	}
+}
+
 type PaymentStatus string
 
 const (
 	PaymentStatusPaid    PaymentStatus = "paid"
 	PaymentStatusPending PaymentStatus = "pending"
 	PaymentStatusFailed  PaymentStatus = "failed"
-	// TO-DO PaymentStatusClosed  PaymentStatus = "closed"
+	PaymentStatusClosed  PaymentStatus = "closed"
 )
 
 type CreatePaymentRequest struct {
@@ -104,7 +147,7 @@ type GetPaymentResponse struct {
 // Implement the Service interface here
 
 // CreatePayment creates a new payment
-func (s *service) CreatePayment(ctx context.Context, request CreatePaymentRequest) (CreatePaymentResponse, error) {
+func (s *serviceImpl) CreatePayment(ctx context.Context, request CreatePaymentRequest) (CreatePaymentResponse, error) {
 	// Validate UUID
 	if request.Payment.ID == uuid.Nil {
 		logger.Error("Invalid UUID")
@@ -166,7 +209,7 @@ func MockPaymentProcess(p PaymentStatus) PaymentStatus {
 }
 
 // ProcessPayment processes a payment
-func (s *service) ProcessPayment(ctx context.Context, paymentID uuid.UUID) (Payment, error) {
+func (s *serviceImpl) ProcessPayment(ctx context.Context, paymentID uuid.UUID) (Payment, error) {
 	// get the payment from the datastore
 	paymentstored, err := s.redisClient.Get(ctx, paymentID.String())
 	if err != nil {
@@ -185,8 +228,29 @@ func (s *service) ProcessPayment(ctx context.Context, paymentID uuid.UUID) (Paym
 }
 
 // UpdatePayment updates a payment
-func (s *service) UpdatePayment(ctx context.Context, request UpdatePaymentRequest) (UpdatePaymentResponse, error) {
+func (s *serviceImpl) UpdatePayment(ctx context.Context, request UpdatePaymentRequest) (UpdatePaymentResponse, error) {
 	// get the payment from the datastore
+	if request.PaymentStatus == PaymentStatusClosed {
+		paymentStored, err := s.redisClient.Get(ctx, request.PaymentID.String())
+		if err != nil || paymentStored == "" {
+			return UpdatePaymentResponse{}, nil
+		}
+
+		// Removing from queues
+		_ = s.redisClient.LREM(ctx, "payment_pending_queue", 0, request.PaymentID.String())
+		_ = s.redisClient.LREM(ctx, "payment_processing_queue", 0, request.PaymentID.String())
+
+		// payment string to bytes
+		paymentBytes, err := json.Marshal(paymentStored)
+
+		err = s.redisClient.Set(ctx, request.PaymentID.String(), paymentBytes, 0)
+
+		return UpdatePaymentResponse{
+			PaymentID: request.PaymentID,
+			Status:    request.PaymentStatus,
+		}, nil
+	}
+
 	payment, err := s.ProcessPayment(ctx, request.PaymentID)
 	if err != nil {
 		return UpdatePaymentResponse{}, err
@@ -198,8 +262,9 @@ func (s *service) UpdatePayment(ctx context.Context, request UpdatePaymentReques
 		return UpdatePaymentResponse{}, err
 	}
 	// notify channels of the payment status
-	if request.PaymentStatus == PaymentStatusPaid {
-		err = s.redisClient.Publish(ctx, "payment_paid_notification", paymentBytes)
+	switch payment.Status {
+	case PaymentStatusPaid:
+		err = s.redisClient.Publish(ctx, messages.PaymentStatusResponseChannel, paymentBytes)
 		if err != nil {
 			logger.Error(err.Error())
 			return UpdatePaymentResponse{}, err
@@ -210,8 +275,8 @@ func (s *service) UpdatePayment(ctx context.Context, request UpdatePaymentReques
 			logger.Error(err.Error())
 			return UpdatePaymentResponse{}, err
 		}
-	} else if request.PaymentStatus == PaymentStatusFailed {
-		err = s.redisClient.Publish(ctx, "payment_failed_notification", paymentBytes)
+	case PaymentStatusFailed:
+		err = s.redisClient.Publish(ctx, messages.PaymentStatusResponseChannel, paymentBytes)
 		if err != nil {
 			logger.Error(err.Error())
 			return UpdatePaymentResponse{}, err
@@ -233,7 +298,7 @@ func (s *service) UpdatePayment(ctx context.Context, request UpdatePaymentReques
 }
 
 // GetPayment gets a payment
-func (s *service) GetPayment(ctx context.Context, request GetPaymentRequest) (GetPaymentResponse, error) {
+func (s *serviceImpl) GetPayment(ctx context.Context, request GetPaymentRequest) (GetPaymentResponse, error) {
 	// get the payment from the datastore
 	paymentStored, err := s.redisClient.Get(ctx, request.PaymentID.String())
 	if err != nil {

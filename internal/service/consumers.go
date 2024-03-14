@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/SOAT1StackGoLang/msvc-payments/pkg/messages"
 	"math"
 	"os"
 	"os/signal"
@@ -20,7 +22,7 @@ type BackgroundService interface {
 	StartProcessingPayments()
 }
 
-func (s *service) paymentProccess(ctx context.Context) error {
+func (s *serviceImpl) paymentProccess(ctx context.Context) error {
 	logger.Info("Initializing payments processing...")
 
 	// Listen for a shutdown signal
@@ -63,7 +65,7 @@ func (s *service) paymentProccess(ctx context.Context) error {
 		}
 	}
 }
-func (s *service) processPayment(ctx context.Context) (string, error) {
+func (s *serviceImpl) processPayment(ctx context.Context) (string, error) {
 	logger.Info("Initializing payments processing...")
 	for {
 		// get the payment from the payments pending queue
@@ -103,7 +105,7 @@ func (s *service) processPayment(ctx context.Context) (string, error) {
 	}
 }
 
-func (s *service) StartProcessingPayments() {
+func (s *serviceImpl) StartProcessingPayments() {
 	var wg sync.WaitGroup
 
 	wg.Add(1)
@@ -130,4 +132,61 @@ func (s *service) StartProcessingPayments() {
 	}()
 
 	wg.Wait()
+}
+
+func (s *serviceImpl) StartConsumingPayments() {
+	ctx := context.Background()
+	sub, err := s.redisClient.Subscribe(ctx, messages.OrderPaymentCreationRequestChannel)
+	if err != nil {
+		logger.Error("failed subscribing to payment creation requests")
+		return
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-sub:
+			s.handlePaymentCreationRequest(msg.Payload)
+		}
+	}
+}
+
+func (s *serviceImpl) handlePaymentCreationRequest(payload string) {
+	var paymentRequest messages.PaymentCreationRequestMessage
+	err := json.Unmarshal([]byte(payload), &paymentRequest)
+	if err != nil {
+		logger.Error("failed unmarshalling payment creation request")
+		return
+	}
+
+	pR, err := PaymentFromPaymentCreationRequestMessage(paymentRequest)
+	if err != nil {
+		logger.Error("failed converting payment creation request")
+		return
+	}
+
+	if pR.Status == PaymentStatusClosed {
+		_, err := s.UpdatePayment(context.Background(), UpdatePaymentRequest{
+			PaymentID:     pR.ID,
+			PaymentStatus: PaymentStatusClosed,
+		})
+		if err != nil {
+			logger.Error("failed updating payment")
+		}
+
+		return
+	}
+	_, err = s.CreatePayment(context.Background(), CreatePaymentRequest{Payment: Payment{
+		ID:        pR.ID,
+		CreatedAt: pR.CreatedAt,
+		UpdatedAt: pR.UpdatedAt,
+		Price:     pR.Price,
+		OrderID:   pR.OrderID,
+		Status:    pR.Status,
+	}})
+	if err != nil {
+		logger.Error("failed creating payment")
+		return
+	}
 }
