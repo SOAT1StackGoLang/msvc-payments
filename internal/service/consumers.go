@@ -134,7 +134,7 @@ func (s *serviceImpl) StartProcessingPayments() {
 	wg.Wait()
 }
 
-func (s *serviceImpl) StartConsumingPayments() {
+func (s *serviceImpl) StartConsumingPaymentsRequests() {
 	ctx := context.Background()
 	sub, err := s.redisClient.Subscribe(ctx, messages.OrderPaymentCreationRequestChannel)
 	if err != nil {

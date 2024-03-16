@@ -44,7 +44,7 @@ type Service interface {
 	UpdatePayment(ctx context.Context, request UpdatePaymentRequest) (UpdatePaymentResponse, error)
 	GetPayment(ctx context.Context, request GetPaymentRequest) (GetPaymentResponse, error)
 	StartProcessingPayments()
-	StartConsumingPayments()
+	StartConsumingPaymentsRequests()
 }
 
 type serviceImpl struct {
@@ -64,6 +64,15 @@ type Payment struct {
 	Status    PaymentStatus
 }
 
+func PaymentStatusChangedMessageFromPayment(p Payment) messages.PaymentStatusChangedMessage {
+	return messages.PaymentStatusChangedMessage{
+		ID:        p.ID.String(),
+		UpdatedAt: p.UpdatedAt.Format(time.RFC3339),
+		OrderID:   p.OrderID.String(),
+		Status:    string(p.Status),
+	}
+
+}
 func PaymentFromPaymentCreationRequestMessage(p messages.PaymentCreationRequestMessage) (*Payment, error) {
 	id, err := uuid.Parse(p.ID)
 	if err != nil {
@@ -252,6 +261,8 @@ func (s *serviceImpl) UpdatePayment(ctx context.Context, request UpdatePaymentRe
 	}
 
 	payment, err := s.ProcessPayment(ctx, request.PaymentID)
+	paymentResp := PaymentStatusChangedMessageFromPayment(payment)
+	pRespBytes, err := json.Marshal(paymentResp)
 	if err != nil {
 		return UpdatePaymentResponse{}, err
 	}
@@ -264,7 +275,7 @@ func (s *serviceImpl) UpdatePayment(ctx context.Context, request UpdatePaymentRe
 	// notify channels of the payment status
 	switch payment.Status {
 	case PaymentStatusPaid:
-		err = s.redisClient.Publish(ctx, messages.PaymentStatusResponseChannel, paymentBytes)
+		err = s.redisClient.Publish(ctx, messages.PaymentStatusResponseChannel, pRespBytes)
 		if err != nil {
 			logger.Error(err.Error())
 			return UpdatePaymentResponse{}, err
@@ -276,7 +287,7 @@ func (s *serviceImpl) UpdatePayment(ctx context.Context, request UpdatePaymentRe
 			return UpdatePaymentResponse{}, err
 		}
 	case PaymentStatusFailed:
-		err = s.redisClient.Publish(ctx, messages.PaymentStatusResponseChannel, paymentBytes)
+		err = s.redisClient.Publish(ctx, messages.PaymentStatusResponseChannel, pRespBytes)
 		if err != nil {
 			logger.Error(err.Error())
 			return UpdatePaymentResponse{}, err
