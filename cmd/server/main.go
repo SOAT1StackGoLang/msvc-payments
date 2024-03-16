@@ -25,7 +25,7 @@ func main() {
 	go svc.StartProcessingPayments()
 
 	// Start consuming payments background service
-	go svc.StartConsumingPayments()
+	go svc.StartConsumingPaymentsRequests()
 
 	// Create the endpoints using MakeEndpoints and CreatePaymentEndpoint from the service package
 	endpoints := endpoint.MakeEndpoints(svc)
